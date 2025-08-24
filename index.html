@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumio - Manage Your Time</title>
+    <link rel="icon" type="image/png" href="Icon Melon 1024-1024 (circle).png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* * ===================================================================
+         * ОБЩИЕ СТИЛИ И АНИМАЦИИ
+         * ===================================================================
+        */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1110;
+            color: #F5F5DC;
+            overflow-x: hidden; /* Предотвращает горизонтальную прокрутку */
+        }
+
+        /* Анимированный фон, следующий за курсором */
+        .background-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.5;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .blob-1 { width: 400px; height: 400px; background: rgba(160, 82, 45, 0.5); }
+        .blob-2 { width: 300px; height: 300px; background: rgba(210, 180, 140, 0.5); }
+        .blob-3 { width: 350px; height: 350px; background: rgba(255, 215, 0, 0.4); }
+
+        /* Эффект матового стекла */
+        .frosted-glass {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Улучшенный эффект для подсказки Telegram */
+        .tooltip-glass {
+            background: rgba(30, 20, 20, 0.95); /* Сделано менее прозрачным */
+            backdrop-filter: blur(16px); /* Усилен блюр */
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Анимация свечения для иконки приложения */
+        .glowing-icon {
+            animation: pulse-glow 4s infinite ease-in-out;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 40px 5px rgba(255, 198, 129, 0.5); }
+            50% { box-shadow: 0 0 70px 15px rgba(255, 207, 148, 0.5); }
+        }
+
+        /* Анимация "дыхания" для иконки */
+        .breathe-animation {
+            animation: breathe 4s infinite ease-in-out;
+        }
+        @keyframes breathe {
+            0%, 100% {
+                transform: scale(1); /* Начальный и конечный размер */
+            }
+            50% {
+                transform: scale(1.05); /* Увеличиваем размер на 5% */
+            }
+        }
+
+        /* Общий стиль для светящихся кнопок */
+        .glowing-button-base {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 223, 186, 0.2), 0 0 20px rgba(255, 223, 186, 0.1);
+        }
+        .glowing-button-base:hover {
+            box-shadow: 0 0 20px rgba(255, 223, 186, 0.5), 0 0 40px rgba(255, 223, 186, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Общие анимации появления элементов */
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .fade-in-up { animation: fadeInUp 1s ease-out forwards; opacity: 0; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .hero-title { animation-delay: 0.2s; }
+        .hero-subtitle { animation-delay: 0.4s; }
+        .hero-buttons { animation-delay: 0.4s; }
+        .hero-icon { animation-delay: 0.5s; transform: scale(0.8); animation: scaleUp 1s ease-out 0.5s forwards; }
+        @keyframes scaleUp { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        
+        .scroll-down-btn { animation: bounce 2s infinite; }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-15px); }
+            60% { transform: translateY(-8px); }
+        }
+
+        /* * ===================================================================
+         * СТИЛИ И АДАПТИВНОСТЬ КАРУСЕЛИ
+         * ===================================================================
+        */
+        .carousel-section-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        #carousel-section {
+            width: 100%;
+            overflow-x: hidden;
+        }
+        
+        .carousel-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+            height: 65vh;
+            max-height: 550px; /* ИЗМЕНЕНИЕ: Уменьшил максимальную высоту */
+            width: 100vw; /* Занимает всю ширину видимой области */
+            transform-style: preserve-3d; /* Улучшает рендеринг в 3D */
+        }
+
+        .carousel-card {
+            position: absolute;
+            width: 50%;
+            aspect-ratio: 9 / 20;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            transition: transform 0.5s ease, opacity 0.5s ease, filter 0.5s ease;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        .carousel-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Адаптивность карусели для разных экранов */
+        @media (min-width: 901px) {
+            .carousel-card {
+                width: 17%; /* Оптимальная ширина для десктопа */
+            }
+        }
+        @media (max-width: 900px) {
+            .carousel-card {
+                width: 35%; /* Оптимальная ширина для планшета */
+            }
+        }
+        @media (max-width: 500px) {
+            .carousel-card {
+                width: 65%; /* Оптимальная ширина для смартфона */
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="background-container">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <main>
+        <section class="min-h-screen flex flex-col items-center justify-center pt-20 pb-10 relative overflow-hidden">
+            <div class="container mx-auto px-6 grid md:grid-cols-2 gap-10 items-center flex-grow">
+                
+                <div class="text-center md:text-left">
+                    <h1 class="text-4xl md:text-7xl font-extrabold leading-tight text-white fade-in-up hero-title">
+                        Manage your time with <span class="text-yellow-300">Lumio</span>
+                    </h1>
+                    <p class="mt-4 text-lg text-gray-300 fade-in-up hero-subtitle">
+                        
+                    </p>
+                    <div class="fade-in-up hero-buttons">
+                        <div class="mt-8 flex items-center justify-center md:justify-start gap-4">
+                            <a href="Lumio%20v0.4.0-alpha.apk" download="Lumio v0.4.0-alpha.apk" class="frosted-glass glowing-button-base text-white font-bold rounded-full text-lg text-center">
+                                <div class="py-4 px-10">
+                                    Download
+                                    <span class="block text-xs font-normal text-gray-300 -mt-1">For Android</span>
+                                </div>
+                            </a>
+                            <div class="relative group">
+                                <a href="https://t.me/+TL4NkwrQfDA0OTZi" target="_blank" title="Join our Telegram Channel" class="frosted-glass glowing-button-base h-16 w-16 flex items-center justify-center rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.58c-.28 1.13-1.04 1.4-1.74.88l-4.98-3.6-2.32 2.2a1.06 1.06 0 0 1-.92.29z"/></svg>
+                                </a>
+                                <div class="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-64 p-4 tooltip-glass rounded-lg text-center text-sm text-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                                    Join our Telegram channel to get the latest news, ask questions, or report a bug.
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mt-4 text-center md:text-left text-sm text-gray-400">
+                            Version 0.4.0-alpha (23.08.2025)
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex justify-center items-center hero-icon">
+                    <div class="w-64 h-64 md:w-80 md:h-80 glowing-icon flex justify-center items-center rounded-full">
+                        <img src="Icon Melon 896 x 797.png" alt="Lumio App Icon" class="w-full h-full object-cover rounded-full breathe-animation">
+                    </div>
+                </div>
+            </div>
+            
+            <a href="#carousel-section" class="scroll-down-btn mt-10 text-white hover:text-yellow-300 transition-colors duration-300">
+                <div class="flex flex-col items-center">
+                    <span>Explore</span>
+                    <svg class="w-6 h-6 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </a>
+        </section>
+
+        <section id="carousel-section" class="py-20">
+            <div class="container mx-auto carousel-section-wrapper">
+                 <div class="text-center mb-12 reveal px-4">
+                    <h3 class="text-4xl font-bold text-white">Explore the App</h3>
+                    <p class="mt-2 mb-10 text-gray-300">Click on cards or scroll to see Lumio in action.</p>
+                </div>
+                <div id="carousel" class="carousel-container relative">
+                    </div>
+                <a href="#features" class="scroll-down-btn mt-12 text-white hover:text-yellow-300 transition-colors duration-300">
+                    <div class="flex flex-col items-center">
+                        <span>Features</span>
+                        <svg class="w-6 h-6 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <section id="features" class="py-20">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12 reveal">
+                    <h3 class="text-4xl font-bold text-white">All Tools in One Place</h3>
+                    <p class="mt-2 text-gray-300">Lumio provides a full suite of features to manage your time.</p>
+                </div>
+                <div class="frosted-glass p-6 rounded-xl mb-12 max-w-3xl mx-auto text-center border-l-4 border-yellow-400 reveal">
+                    <p class="text-yellow-200">
+                        <span class="font-bold">Please note:</span> The application is currently under active development. Some features may be temporarily unavailable or working in a test mode.
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="frosted-glass p-8 rounded-xl reveal transition-all duration-300 hover:bg-white/10 hover:scale-105">
+                        <div class="text-4xl mb-4">🍅</div> <h4 class="text-2xl font-bold mb-2 text-white">Pomodoro Timer</h4> <p class="text-gray-300">Boost your concentration with the proven Pomodoro technique.</p>
+                    </div>
+                    <div class="frosted-glass p-8 rounded-xl reveal transition-all duration-300 hover:bg-white/10 hover:scale-105" style="transition-delay: 100ms;">
+                        <div class="text-4xl mb-4">✔️</div> <h4 class="text-2xl font-bold mb-2 text-white">Tasks</h4> <p class="text-gray-300">Organize your to-dos with a user-friendly task manager.</p>
+                    </div>
+                    <div class="frosted-glass p-8 rounded-xl reveal transition-all duration-300 hover:bg-white/10 hover:scale-105" style="transition-delay: 200ms;">
+                        <div class="text-4xl mb-4">🔁</div> <h4 class="text-2xl font-bold mb-2 text-white">Habit Tracker</h4> <p class="text-gray-300">Build good habits and break bad ones.</p>
+                    </div>
+                    <div class="frosted-glass p-8 rounded-xl reveal transition-all duration-300 hover:bg-white/10 hover:scale-105" style="transition-delay: 300ms;">
+                        <div class="text-4xl mb-4">🎯</div> <h4 class="text-2xl font-bold mb-2 text-white">Goal Setting</h4> <p class="text-gray-300">Set ambitious goals and break them down into small, achievable steps.</p>
+                    </div>
+                    <div class="frosted-glass p-8 rounded-xl reveal transition-all duration-300 hover:bg-white/10 hover:scale-105" style="transition-delay: 400ms;">
+                        <div class="text-4xl mb-4">📊</div> <h4 class="text-2xl font-bold mb-2 text-white">Statistics</h4> <p class="text-gray-300">Analyze your productivity with clear charts and reports.</p>
+                    </div>
+                    <div class="frosted-glass p-8 rounded-xl reveal transition-all duration-300 hover:bg-white/10 hover:scale-105" style="transition-delay: 500ms;">
+                        <div class="text-4xl mb-4">🎨</div> <h4 class="text-2xl font-bold mb-2 text-white">Pleasant Design</h4> <p class="text-gray-300">Enjoy a calm and minimalist interface</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="support" class="py-20">
+            <div class="container mx-auto px-6 flex justify-center">
+                <div class="frosted-glass p-10 rounded-2xl max-w-2xl text-center reveal shadow-2xl">
+                    <h3 class="text-3xl font-bold text-white mb-4">Support the Project</h3>
+                    <p class="text-gray-300 mb-6">
+                        Lumio is a free application and will always remain so. However, publishing it on Google Play requires a fee from the developer. Your donation will make it possible to publish Lumio on Google Play and support its further development.
+                    </p>
+                    <a href="https://tbank.ru/cf/1ntWnJ2SQaO" target="_blank" class="inline-block bg-yellow-400 text-gray-900 font-bold py-4 px-10 rounded-full text-lg transition-all duration-300 hover:bg-yellow-300 hover:scale-105 shadow-lg hover:shadow-yellow-400/30">
+                        Support Project
+                    </a>
+                    <p class="text-yellow-500 mt-4 text-sm">
+                        Warning: For some reason, the app cannot be released on Google Play until 2027.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="py-6">
+        <div class="container mx-auto px-6 text-center text-gray-400">
+            <p>&copy; 2025 Lumio. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        /**
+         * ===================================================================
+         * ИСПОЛНЯЕМЫЙ КОД ПОСЛЕ ЗАГРУЗКИ СТРАНИЦЫ
+         * ===================================================================
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            initBlobCursorEffect();
+            initScrollReveal();
+            initCarousel();
+        });
+
+        /**
+         * ===================================================================
+         * МОДУЛЬ 1: АНИМАЦИЯ ФОНА, СЛЕДУЮЩЕГО ЗА КУРСОРОМ
+         * ===================================================================
+         */
+        function initBlobCursorEffect() {
+            const blobs = document.querySelectorAll('.blob');
+            if (blobs.length === 0) return;
+
+            document.body.addEventListener('mousemove', (event) => {
+                const { clientX, clientY } = event;
+                window.requestAnimationFrame(() => {
+                    blobs[0].style.transform = `translate(${clientX * 0.1}px, ${clientY * 0.1}px)`;
+                    blobs[1].style.transform = `translate(${clientX * 0.05}px, ${clientY * 0.05}px)`;
+                    blobs[2].style.transform = `translate(${clientX * 0.02}px, ${clientY * 0.02}px)`;
+                });
+            });
+        }
+
+        /**
+         * ===================================================================
+         * МОДУЛЬ 2: АНИМАЦИЯ ПОЯВЛЕНИЯ ЭЛЕМЕНТОВ ПРИ ПРОКРУТКЕ
+         * ===================================================================
+         */
+        function initScrollReveal() {
+            const revealElements = document.querySelectorAll('.reveal');
+            if (revealElements.length === 0) return;
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            revealElements.forEach(element => {
+                observer.observe(element);
+            });
+        }
+
+        /**
+         * ===================================================================
+         * МОДУЛЬ 3: ИНТЕРАКТИВНАЯ КАРУСЕЛЬ
+         * ===================================================================
+         */
+        function initCarousel() {
+            const carousel = document.getElementById('carousel');
+            if (!carousel) return;
+
+            const cardsData = [
+                { title: 'Pomodoro Timer (coffee)', imgSrc: 'Сarousel/PomodoroTimer (coffee).jpg' },
+                { title: 'Tasks (coffee)', imgSrc: 'Сarousel/Tasks (coffee).jpg' },
+                { title: 'Habits (coffee)', imgSrc: 'Сarousel/Habits (coffee).jpg' },
+                { title: 'Goals (coffee)', imgSrc: 'Сarousel/Goals (coffee).jpg' },
+                { title: 'Pomodoro Timer (dark)', imgSrc: 'Сarousel/PomodoroTimer (dark).jpg' },
+                { title: 'Tasks (dark)', imgSrc: 'Сarousel/Tasks (dark).jpg' },
+                { title: 'Habits (dark)', imgSrc: 'Сarousel/Habits (dark).jpg' },
+                { title: 'Goals (dark)', imgSrc: 'Сarousel/Goals (dark).jpg' },
+                { title: 'Pomodoro Timer (light)', imgSrc: 'Сarousel/PomodoroTimer (light).jpg' },
+                { title: 'Tasks (light)', imgSrc: 'Сarousel/Tasks (light).jpg' },
+                { title: 'Habits (light)', imgSrc: 'Сarousel/Habits (light).jpg' },
+                { title: 'Goals (light)', imgSrc: 'Сarousel/Goals (light).jpg' }
+            ];
+
+            let currentIndex = 0;
+            const numCards = cardsData.length;
+
+            function createCards() {
+                carousel.innerHTML = '';
+                cardsData.forEach((data, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'carousel-card';
+                    card.dataset.index = index;
+                    card.innerHTML = `<img src="${data.imgSrc}" alt="${data.title}">`;
+                    carousel.appendChild(card);
+                });
+            }
+
+            function updateCarousel() {
+                const cards = document.querySelectorAll('.carousel-card');
+                const isMobile = window.innerWidth < 768;
+
+                cards.forEach((card, i) => {
+                    const offset = (i - currentIndex + numCards) % numCards;
+                    
+                    let transform, opacity, zIndex, filter;
+                    
+                    const mainTranslate = isMobile ? '65%' : '50%';
+                    const secondaryTranslate = isMobile ? '110%' : '90%';
+
+                    switch (offset) {
+                        case 0:
+                            transform = 'translateX(0) scale(1)';
+                            opacity = 1; zIndex = 5; filter = 'brightness(1)';
+                            break;
+                        case 1:
+                            transform = `translateX(${mainTranslate}) scale(0.8)`;
+                            opacity = 0.7; zIndex = 4; filter = 'brightness(0.7)';
+                            break;
+                        case numCards - 1:
+                            transform = `translateX(-${mainTranslate}) scale(0.8)`;
+                            opacity = 0.7; zIndex = 4; filter = 'brightness(0.7)';
+                            break;
+                        case 2:
+                            transform = `translateX(${secondaryTranslate}) scale(0.6)`;
+                            opacity = 0.3; zIndex = 3; filter = 'brightness(0.4)';
+                            break;
+                        case numCards - 2:
+                            transform = `translateX(-${secondaryTranslate}) scale(0.6)`;
+                            opacity = 0.3; zIndex = 3; filter = 'brightness(0.4)';
+                            break;
+                        default:
+                            transform = `translateX(${offset > numCards / 2 ? '-150%' : '150%'}) scale(0.5)`;
+                            opacity = 0; zIndex = 1; filter = 'brightness(0)';
+                            break;
+                    }
+                    
+                    card.style.transform = transform;
+                    card.style.opacity = opacity;
+                    card.style.zIndex = zIndex;
+                    card.style.filter = filter;
+                });
+            }
+
+            let isScrolling;
+            carousel.addEventListener('wheel', (e) => {
+                const carouselRect = carousel.getBoundingClientRect();
+                if (e.clientY < carouselRect.top || e.clientY > carouselRect.bottom || e.clientX < carouselRect.left || e.clientX > carouselRect.right) {
+                    return;
+                }
+                
+                e.preventDefault();
+                window.clearTimeout(isScrolling);
+                isScrolling = setTimeout(() => {
+                    if (e.deltaY > 0 || e.deltaX > 0) {
+                        currentIndex = (currentIndex + 1) % numCards;
+                    } else {
+                        currentIndex = (currentIndex - 1 + numCards) % numCards;
+                    }
+                    updateCarousel();
+                }, 50);
+            }, { passive: false });
+
+            carousel.addEventListener('click', (e) => {
+                const clickedCard = e.target.closest('.carousel-card');
+                if (clickedCard) {
+                    const newIndex = parseInt(clickedCard.dataset.index);
+                    if (newIndex !== currentIndex) {
+                        currentIndex = newIndex;
+                        updateCarousel();
+                    }
+                }
+            });
+            
+            createCards();
+            updateCarousel();
+            window.addEventListener('resize', updateCarousel);
+        }
+    </script>
+
+</body>
+</html>
