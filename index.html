@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lumio - Manage Your Time</title>
-    <link rel="icon" type="image/png" href="Icon Melon 1024-1024 (circle).png">
+    <!-- Добавлен ID для фавикона, чтобы менять его через JS -->
+    <link id="favicon-link" rel="icon" type="image/png" href="Icon Melon 1024-1024 (circle).png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +23,14 @@
             font-family: 'Inter', sans-serif;
             background-color: #1a1110;
             color: #F5F5DC;
-            overflow-x: hidden; /* Предотвращает горизонтальную прокрутку */
+            overflow-x: hidden;
+            transition: background-color 1s ease, color 1s ease;
+        }
+
+        /* --- ЗИМНЯЯ ТЕМА (ПЕРЕОПРЕДЕЛЕНИЯ) --- */
+        body.winter-theme {
+            background-color: #0B1120; /* Deep Ice Navy */
+            color: #E2E8F0; /* Slate 200 */
         }
 
         /* Анимированный фон, следующий за курсором */
@@ -40,12 +48,18 @@
             border-radius: 50%;
             filter: blur(100px);
             opacity: 0.5;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 1s ease;
         }
 
+        /* Стандартные (теплые) цвета */
         .blob-1 { width: 400px; height: 400px; background: rgba(160, 82, 45, 0.5); }
         .blob-2 { width: 300px; height: 300px; background: rgba(210, 180, 140, 0.5); }
         .blob-3 { width: 350px; height: 350px; background: rgba(255, 215, 0, 0.4); }
+
+        /* Зимние (холодные) цвета */
+        body.winter-theme .blob-1 { background: rgba(14, 165, 233, 0.4); } /* Sky Blue */
+        body.winter-theme .blob-2 { background: rgba(99, 102, 241, 0.4); } /* Indigo */
+        body.winter-theme .blob-3 { background: rgba(200, 230, 255, 0.3); } /* Ice White */
 
         /* Эффект матового стекла */
         .frosted-glass {
@@ -53,38 +67,59 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: border-color 0.5s ease, background 0.5s ease;
+        }
+        
+        body.winter-theme .frosted-glass {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(56, 189, 248, 0.2);
         }
 
         /* Улучшенный эффект для подсказки Telegram */
         .tooltip-glass {
-            background: rgba(30, 20, 20, 0.95); /* Сделано менее прозрачным */
-            backdrop-filter: blur(16px); /* Усилен блюр */
+            background: rgba(30, 20, 20, 0.95);
+            backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        body.winter-theme .tooltip-glass {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #bae6fd;
         }
 
         /* Анимация свечения для иконки приложения */
         .glowing-icon {
             animation: pulse-glow 4s infinite ease-in-out;
+            transition: box-shadow 1s ease;
         }
         @keyframes pulse-glow {
             0%, 100% { box-shadow: 0 0 40px 5px rgba(255, 198, 129, 0.5); }
             50% { box-shadow: 0 0 70px 15px rgba(255, 207, 148, 0.5); }
         }
 
-        /* Анимация "дыхания" для иконки */
-        .breathe-animation {
-            animation: breathe 4s infinite ease-in-out;
+        /* Зимнее свечение */
+        body.winter-theme .glowing-icon {
+            animation: winter-pulse-glow 4s infinite ease-in-out;
         }
-        @keyframes breathe {
-            0%, 100% {
-                transform: scale(1); /* Начальный и конечный размер */
-            }
-            50% {
-                transform: scale(1.05); /* Увеличиваем размер на 5% */
-            }
+        @keyframes winter-pulse-glow {
+            0%, 100% { box-shadow: 0 0 40px 5px rgba(56, 189, 248, 0.4); }
+            50% { box-shadow: 0 0 70px 15px rgba(186, 230, 253, 0.5); }
         }
 
+        /* Анимация "дыхания" и фильтр для иконки */
+        .breathe-animation {
+            animation: breathe 4s infinite ease-in-out;
+            transition: filter 1s ease;
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* УБРАН CSS ФИЛЬТР HUE-ROTATE, ТАК КАК ТЕПЕРЬ МЕНЯЕМ ФАЙЛ */
+        
         /* Общий стиль для светящихся кнопок */
         .glowing-button-base {
             position: relative;
@@ -96,7 +131,42 @@
             box-shadow: 0 0 20px rgba(255, 223, 186, 0.5), 0 0 40px rgba(255, 223, 186, 0.3);
             transform: translateY(-2px);
         }
+
+        /* Зимние кнопки */
+        body.winter-theme .glowing-button-base {
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2), 0 0 20px rgba(56, 189, 248, 0.1);
+        }
+        body.winter-theme .glowing-button-base:hover {
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.5), 0 0 40px rgba(56, 189, 248, 0.3);
+            border-color: rgba(56, 189, 248, 0.5);
+        }
         
+        /* ПЕРЕОПРЕДЕЛЕНИЕ ЦВЕТОВ TAILWIND ДЛЯ ЗИМЫ */
+        /* Желтый текст -> Голубой неон */
+        body.winter-theme .text-yellow-300 { color: #22d3ee !important; } /* Cyan-400 */
+        body.winter-theme .text-yellow-200 { color: #bae6fd !important; } /* Sky-200 */
+        body.winter-theme .text-yellow-500 { color: #0ea5e9 !important; } /* Sky-500 */
+        body.winter-theme .text-gray-300 { color: #cbd5e1 !important; } /* Slate-300 */
+        body.winter-theme .text-gray-400 { color: #94a3b8 !important; } /* Slate-400 */
+        
+        /* Желтый фон -> Синий фон */
+        body.winter-theme .bg-yellow-400 { 
+            background-color: #0ea5e9 !important; /* Sky-500 */
+            color: white !important;
+        }
+        body.winter-theme .hover\:bg-yellow-300:hover { 
+            background-color: #38bdf8 !important; /* Sky-400 */ 
+        }
+        body.winter-theme .border-yellow-400 {
+            border-color: #0ea5e9 !important;
+        }
+        body.winter-theme .hover\:text-yellow-300:hover {
+            color: #67e8f9 !important;
+        }
+        body.winter-theme .hover\:shadow-yellow-400\/30:hover {
+            box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.3) !important;
+        }
+
         /* Общие анимации появления элементов */
         .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
         .reveal.visible { opacity: 1; transform: translateY(0); }
@@ -137,9 +207,9 @@
             align-items: center;
             perspective: 1000px;
             height: 65vh;
-            max-height: 550px; /* ИЗМЕНЕНИЕ: Уменьшил максимальную высоту */
-            width: 100vw; /* Занимает всю ширину видимой области */
-            transform-style: preserve-3d; /* Улучшает рендеринг в 3D */
+            max-height: 550px;
+            width: 100vw;
+            transform-style: preserve-3d;
         }
 
         .carousel-card {
@@ -159,21 +229,24 @@
             object-fit: cover;
         }
         
-        /* Адаптивность карусели для разных экранов */
-        @media (min-width: 901px) {
-            .carousel-card {
-                width: 17%; /* Оптимальная ширина для десктопа */
-            }
+        @media (min-width: 901px) { .carousel-card { width: 17%; } }
+        @media (max-width: 900px) { .carousel-card { width: 35%; } }
+        @media (max-width: 500px) { .carousel-card { width: 65%; } }
+
+        /* Canvas для снега */
+        #snow-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0; /* Над фоном, под контентом */
+            opacity: 0;
+            transition: opacity 2s ease;
         }
-        @media (max-width: 900px) {
-            .carousel-card {
-                width: 35%; /* Оптимальная ширина для планшета */
-            }
-        }
-        @media (max-width: 500px) {
-            .carousel-card {
-                width: 65%; /* Оптимальная ширина для смартфона */
-            }
+        body.winter-theme #snow-canvas {
+            opacity: 1;
         }
     </style>
 </head>
@@ -185,23 +258,26 @@
         <div class="blob blob-3"></div>
     </div>
 
-    <main>
+    <!-- Canvas для снега -->
+    <canvas id="snow-canvas"></canvas>
+
+    <main class="relative z-10">
         <section class="min-h-screen flex flex-col items-center justify-center pt-20 pb-10 relative overflow-hidden">
             <div class="container mx-auto px-6 grid md:grid-cols-2 gap-10 items-center flex-grow">
                 
                 <div class="text-center md:text-left">
                     <h1 class="text-4xl md:text-7xl font-extrabold leading-tight text-white fade-in-up hero-title">
-                        Manage your time with <span class="text-yellow-300">Lumio</span>
+                        Manage your time with <span class="text-yellow-300 transition-colors duration-1000">Lumio</span>
                     </h1>
                     <p class="mt-4 text-lg text-gray-300 fade-in-up hero-subtitle">
-                        
+                        <!-- Пустой текст в оригинале? Оставил как есть -->
                     </p>
                     <div class="fade-in-up hero-buttons">
                         <div class="mt-8 flex items-center justify-center md:justify-start gap-4">
                             <a href="Lumio%20v0.4.5-alpha.apk" download="Lumio v0.4.5-alpha.apk" class="frosted-glass glowing-button-base text-white font-bold rounded-full text-lg text-center">
                                 <div class="py-4 px-10">
                                     Download
-                                    <span class="block text-xs font-normal text-gray-300 -mt-1">For Android</span>
+                                    <span class="block text-xs font-normal text-gray-300 -mt-1 transition-colors duration-1000">For Android</span>
                                 </div>
                             </a>
                             <div class="relative group">
@@ -213,7 +289,7 @@
                                 </div>
                             </div>
                         </div>
-                        <p class="mt-4 text-center md:text-left text-sm text-gray-400">
+                        <p class="mt-4 text-center md:text-left text-sm text-gray-400 transition-colors duration-1000">
                             Version 0.4.5-alpha (27.10.2025)
                         </p>
                     </div>
@@ -221,7 +297,8 @@
 
                 <div class="flex justify-center items-center hero-icon">
                     <div class="w-64 h-64 md:w-80 md:h-80 glowing-icon flex justify-center items-center rounded-full">
-                        <img src="Icon Melon 896 x 797.png" alt="Lumio App Icon" class="w-full h-full object-cover rounded-full breathe-animation">
+                        <!-- Добавлен ID для смены картинки -->
+                        <img id="hero-icon-img" src="Icon Melon 896 x 797.png" alt="Lumio App Icon" class="w-full h-full object-cover rounded-full breathe-animation">
                     </div>
                 </div>
             </div>
@@ -238,7 +315,7 @@
             <div class="container mx-auto carousel-section-wrapper">
                  <div class="text-center mb-12 reveal px-4">
                     <h3 class="text-4xl font-bold text-white">Explore the App</h3>
-                    <p class="mt-2 mb-10 text-gray-300">Click on cards or scroll to see Lumio in action.</p>
+                    <p class="mt-2 mb-10 text-gray-300 transition-colors duration-1000">Click on cards or scroll to see Lumio in action.</p>
                 </div>
                 <div id="carousel" class="carousel-container relative">
                     </div>
@@ -255,31 +332,31 @@
             <div class="container mx-auto px-6">
                 <div class="text-center mb-12 reveal">
                     <h3 class="text-4xl font-bold text-white">All Tools in One Place</h3>
-                    <p class="mt-2 text-gray-300">Lumio provides a full suite of features to manage your time.</p>
+                    <p class="mt-2 text-gray-300 transition-colors duration-1000">Lumio provides a full suite of features to manage your time.</p>
                 </div>
-                <div class="frosted-glass p-6 rounded-xl mb-12 max-w-3xl mx-auto text-center border-l-4 border-yellow-400 reveal">
-                    <p class="text-yellow-200">
+                <div class="frosted-glass p-6 rounded-xl mb-12 max-w-3xl mx-auto text-center border-l-4 border-yellow-400 transition-colors duration-1000 reveal">
+                    <p class="text-yellow-200 transition-colors duration-1000">
                         <span class="font-bold">Please note:</span> The application is currently under active development. Some features may be temporarily unavailable or working in a test mode.
                     </p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <div class="frosted-glass p-8 rounded-xl reveal transition-all duration-300 hover:bg-white/10 hover:scale-105">
-                        <div class="text-4xl mb-4">🍅</div> <h4 class="text-2xl font-bold mb-2 text-white">Pomodoro Timer</h4> <p class="text-gray-300">Boost your concentration with the proven Pomodoro technique.</p>
+                        <div class="text-4xl mb-4">🍅</div> <h4 class="text-2xl font-bold mb-2 text-white">Pomodoro Timer</h4> <p class="text-gray-300 transition-colors duration-1000">Boost your concentration with the proven Pomodoro technique.</p>
                     </div>
                     <div class="frosted-glass p-8 rounded-xl reveal transition-all duration-300 hover:bg-white/10 hover:scale-105" style="transition-delay: 100ms;">
-                        <div class="text-4xl mb-4">✔️</div> <h4 class="text-2xl font-bold mb-2 text-white">Tasks</h4> <p class="text-gray-300">Organize your to-dos with a user-friendly task manager.</p>
+                        <div class="text-4xl mb-4">✔️</div> <h4 class="text-2xl font-bold mb-2 text-white">Tasks</h4> <p class="text-gray-300 transition-colors duration-1000">Organize your to-dos with a user-friendly task manager.</p>
                     </div>
                     <div class="frosted-glass p-8 rounded-xl reveal transition-all duration-300 hover:bg-white/10 hover:scale-105" style="transition-delay: 200ms;">
-                        <div class="text-4xl mb-4">🔁</div> <h4 class="text-2xl font-bold mb-2 text-white">Habit Tracker</h4> <p class="text-gray-300">Build good habits and break bad ones.</p>
+                        <div class="text-4xl mb-4">🔁</div> <h4 class="text-2xl font-bold mb-2 text-white">Habit Tracker</h4> <p class="text-gray-300 transition-colors duration-1000">Build good habits and break bad ones.</p>
                     </div>
                     <div class="frosted-glass p-8 rounded-xl reveal transition-all duration-300 hover:bg-white/10 hover:scale-105" style="transition-delay: 300ms;">
-                        <div class="text-4xl mb-4">🎯</div> <h4 class="text-2xl font-bold mb-2 text-white">Goal Setting</h4> <p class="text-gray-300">Set ambitious goals and break them down into small, achievable steps.</p>
+                        <div class="text-4xl mb-4">🎯</div> <h4 class="text-2xl font-bold mb-2 text-white">Goal Setting</h4> <p class="text-gray-300 transition-colors duration-1000">Set ambitious goals and break them down into small, achievable steps.</p>
                     </div>
                     <div class="frosted-glass p-8 rounded-xl reveal transition-all duration-300 hover:bg-white/10 hover:scale-105" style="transition-delay: 400ms;">
-                        <div class="text-4xl mb-4">📊</div> <h4 class="text-2xl font-bold mb-2 text-white">Statistics</h4> <p class="text-gray-300">Analyze your productivity with clear charts and reports.</p>
+                        <div class="text-4xl mb-4">📊</div> <h4 class="text-2xl font-bold mb-2 text-white">Statistics</h4> <p class="text-gray-300 transition-colors duration-1000">Analyze your productivity with clear charts and reports.</p>
                     </div>
                     <div class="frosted-glass p-8 rounded-xl reveal transition-all duration-300 hover:bg-white/10 hover:scale-105" style="transition-delay: 500ms;">
-                        <div class="text-4xl mb-4">🎨</div> <h4 class="text-2xl font-bold mb-2 text-white">Pleasant Design</h4> <p class="text-gray-300">Enjoy a calm and minimalist interface</p>
+                        <div class="text-4xl mb-4">🎨</div> <h4 class="text-2xl font-bold mb-2 text-white">Pleasant Design</h4> <p class="text-gray-300 transition-colors duration-1000">Enjoy a calm and minimalist interface</p>
                     </div>
                 </div>
             </div>
@@ -289,13 +366,13 @@
             <div class="container mx-auto px-6 flex justify-center">
                 <div class="frosted-glass p-10 rounded-2xl max-w-2xl text-center reveal shadow-2xl">
                     <h3 class="text-3xl font-bold text-white mb-4">Support the Project</h3>
-                    <p class="text-gray-300 mb-6">
+                    <p class="text-gray-300 mb-6 transition-colors duration-1000">
                         Lumio is a free application and will always remain so. However, publishing it on Google Play requires a fee from the developer. Your donation will make it possible to publish Lumio on Google Play and support its further development.
                     </p>
                     <a href="https://tbank.ru/cf/1ntWnJ2SQaO" target="_blank" class="inline-block bg-yellow-400 text-gray-900 font-bold py-4 px-10 rounded-full text-lg transition-all duration-300 hover:bg-yellow-300 hover:scale-105 shadow-lg hover:shadow-yellow-400/30">
                         Support Project
                     </a>
-                    <p class="text-yellow-500 mt-4 text-sm">
+                    <p class="text-yellow-500 mt-4 text-sm transition-colors duration-1000">
                         Warning: For some reason, the app cannot be released on Google Play until 2027.
                     </p>
                 </div>
@@ -304,28 +381,139 @@
     </main>
 
     <footer class="py-6">
-        <div class="container mx-auto px-6 text-center text-gray-400">
+        <div class="container mx-auto px-6 text-center text-gray-400 transition-colors duration-1000">
             <p>&copy; 2025 Lumio. All rights reserved.</p>
         </div>
     </footer>
 
     <script>
-        /**
-         * ===================================================================
-         * ИСПОЛНЯЕМЫЙ КОД ПОСЛЕ ЗАГРУЗКИ СТРАНИЦЫ
-         * ===================================================================
-         */
         document.addEventListener('DOMContentLoaded', () => {
             initBlobCursorEffect();
             initScrollReveal();
             initCarousel();
+            checkSeasonalTheme(); // Проверка времени года
         });
 
         /**
          * ===================================================================
-         * МОДУЛЬ 1: АНИМАЦИЯ ФОНА, СЛЕДУЮЩЕГО ЗА КУРСОРОМ
+         * МОДУЛЬ: ЗИМНЯЯ ТЕМА И СНЕГ
          * ===================================================================
          */
+        function checkSeasonalTheme() {
+            // Получаем текущую дату по Москве
+            const now = new Date();
+            const moscowTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Moscow"}));
+            
+            const month = moscowTime.getMonth(); // 0-11
+            const day = moscowTime.getDate();
+
+            // Зима: Декабрь (11), Январь (0), Февраль (1)
+            const isWinter = month === 11 || month === 0 || month === 1;
+
+            if (isWinter) {
+                document.body.classList.add('winter-theme');
+                
+                // Включаем снег
+                initSnow();
+
+                // ЗАМЕНА ИКОНОК
+                // Убедитесь, что у вас есть эти файлы в папке проекта!
+                const winterIconSrc = 'Icon Melon Winter.png'; // Ваша зимняя картинка
+                const winterFaviconHref = 'Icon Melon Winter (circle).png'; // Ваш зимний фавикон
+
+                const heroIcon = document.getElementById('hero-icon-img');
+                const faviconLink = document.getElementById('favicon-link');
+
+                if (heroIcon) {
+                    heroIcon.src = winterIconSrc;
+                    // Добавим обработчик ошибок на случай, если файла нет - вернем старый
+                    heroIcon.onerror = function() {
+                        this.src = 'Icon Melon 896 x 797.png';
+                        console.warn('Winter icon not found, reverting to default.');
+                    };
+                }
+
+                if (faviconLink) {
+                    faviconLink.href = winterFaviconHref;
+                }
+            }
+        }
+
+        function initSnow() {
+            const canvas = document.getElementById('snow-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            let width, height;
+            let particles = [];
+            
+            const particleCount = 100; // Количество снежинок
+            
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            
+            window.addEventListener('resize', resize);
+            resize();
+            
+            class Snowflake {
+                constructor() {
+                    this.reset();
+                }
+                
+                reset() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * -height; // Начинаем сверху
+                    this.vx = (Math.random() - 0.5) * 1; // Легкий ветер
+                    this.vy = 1 + Math.random() * 2; // Скорость падения
+                    this.size = 1 + Math.random() * 2; // Размер
+                    this.opacity = 0.3 + Math.random() * 0.5;
+                }
+                
+                update(mouseX) {
+                    this.x += this.vx + (mouseX - width/2) * 0.001; // Влияние мыши на ветер
+                    this.y += this.vy;
+                    
+                    // Если улетел за экран - сброс
+                    if (this.y > height) {
+                        this.reset();
+                    }
+                    if (this.x > width) this.x = 0;
+                    if (this.x < 0) this.x = width;
+                }
+                
+                draw() {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Snowflake());
+            }
+            
+            // Отслеживаем мышь для "параллакса" ветра
+            let mouseX = width / 2;
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+            });
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach(p => {
+                    p.update(mouseX);
+                    p.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+
+        // --- ОСТАЛЬНОЙ КОД БЕЗ ИЗМЕНЕНИЙ ---
+
         function initBlobCursorEffect() {
             const blobs = document.querySelectorAll('.blob');
             if (blobs.length === 0) return;
@@ -340,11 +528,6 @@
             });
         }
 
-        /**
-         * ===================================================================
-         * МОДУЛЬ 2: АНИМАЦИЯ ПОЯВЛЕНИЯ ЭЛЕМЕНТОВ ПРИ ПРОКРУТКЕ
-         * ===================================================================
-         */
         function initScrollReveal() {
             const revealElements = document.querySelectorAll('.reveal');
             if (revealElements.length === 0) return;
@@ -362,11 +545,6 @@
             });
         }
 
-        /**
-         * ===================================================================
-         * МОДУЛЬ 3: ИНТЕРАКТИВНАЯ КАРУСЕЛЬ
-         * ===================================================================
-         */
         function initCarousel() {
             const carousel = document.getElementById('carousel');
             if (!carousel) return;
@@ -427,7 +605,8 @@
                     const card = document.createElement('div');
                     card.className = 'carousel-card';
                     card.dataset.index = index;
-                    card.innerHTML = `<img src="${data.imgSrc}" alt="${data.title}">`;
+                    // Добавлен onerror для обработки отсутствующих изображений
+                    card.innerHTML = `<img src="${data.imgSrc}" alt="${data.title}" onerror="this.onerror=null; this.src='https://placehold.co/400x900?text=No+Image';">`;
                     carousel.appendChild(card);
                 });
             }
